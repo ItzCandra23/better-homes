@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "keywords": [],
+  "keywords": [ "home", "sethome", "plugin", "BDSX" ],
   "author": "",
   "license": "ISC",
   "bdsxPlugin": true,
