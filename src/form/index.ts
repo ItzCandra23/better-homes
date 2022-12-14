@@ -14,6 +14,7 @@ export class HomeForm {
             if (r === null) return;
             if (r === 0) this.teleport(player);
             if (r === 1) this.add(player);
+            if (r === 2) this.remove(player);
         });
     }
     static teleport(player: ServerPlayer) {

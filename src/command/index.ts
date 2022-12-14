@@ -1,22 +1,21 @@
 import { DimensionId } from "bdsx/bds/actor";
 import { BlockPos } from "bdsx/bds/blockpos";
-import { CommandPosition } from "bdsx/bds/command";
+import { CommandPermissionLevel, CommandPosition } from "bdsx/bds/command";
 import { command } from "bdsx/command";
 import { events } from "bdsx/event";
-import { bool_t, CxxString } from "bdsx/nativetype";
+import { bool_t, CxxString, int32_t } from "bdsx/nativetype";
 import { HomeAPI } from "../api";
 import { HomeForm } from "../form";
 
-events.serverOpen.on(() => {
-    command.register("homeui", "Open home-ui menu.")
-    .overload((p, o) => {
-        const entity = o.getEntity();
-        if (entity === null) return;
-        const pl = entity.getNetworkIdentifier().getActor();
-        if (pl === null) return;
+        command.register("homeui", "Open home-ui menu.")
+        .overload((p, o) => {
+            const entity = o.getEntity();
+            if (entity === null) return;
+            const pl = entity.getNetworkIdentifier().getActor();
+            if (pl === null) return;
 
-        HomeForm.menu(pl);
-    }, {});
+            HomeForm.menu(pl);
+        }, {});
         command.register("addhome", "Create a new home position.")
         .overload((p, o) => {
             const entity = o.getEntity();
@@ -130,4 +129,26 @@ events.serverOpen.on(() => {
 
             HomeAPI.listHome(pl, pl);
         }, {});
-});
+        command.register("setmaxhomes", "Change limits player homes.", CommandPermissionLevel.Operator)
+        .overload((p, o) => {
+            const entity = o.getEntity();
+            if (entity === null) return;
+            const pl = entity.getNetworkIdentifier().getActor();
+            if (pl === null) return;
+
+            HomeAPI.setMaxHomes(p.maximum, pl);
+        }, {
+            normalplayer: command.enum("set_normal", "normal"),
+            maximum: int32_t
+        })
+        .overload((p, o) => {
+            const entity = o.getEntity();
+            if (entity === null) return;
+            const pl = entity.getNetworkIdentifier().getActor();
+            if (pl === null) return;
+
+            HomeAPI.setMaxHomes(p.maximum, pl);
+        }, {
+            adminplayer: command.enum("set_admin", "admin"),
+            maximum: int32_t
+        });

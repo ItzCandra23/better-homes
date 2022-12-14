@@ -1,6 +1,6 @@
 
 # Better-Homes
-Home plugin for BDSX.
+Better-Homes is a plugin to teleport back home.
 
 #Commands
 * /homeui - Open home-ui menu.
@@ -8,4 +8,17 @@ Home plugin for BDSX.
 * /listhome - Check your homes.
 * /addhome - Create a new home position.
 * /removehome - Delete/Remove your home position.
+* /setmaxhomes - Change maximum player homes.
 * /save_home - `For Console.`
+
+
+# Github
+* [Author](https://github.com/ItzCandra23)
+* [BetterHomes Github](https://github.com/ItzCandra23/better-homes)
+* [Click for Download](https://github.com/ItzCandra23/better-homes/archive/refs/heads/main.zip)
+
+
+# Changelogs
+## 1.0.1
+* Added new command for change maximum homes: /setmaxhomes < normal | admin > < max: number >
+* Fixes remove home button in /homeui

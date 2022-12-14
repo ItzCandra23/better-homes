@@ -1,10 +1,10 @@
 {
   "name": "@bdsx/better-homes",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "Better-Homes is a plugin to teleport back home.",
   "main": "index.js",
   "keywords": [ "home", "sethome", "plugin", "BDSX" ],
-  "author": "",
+  "author": "ItzCandra23",
   "license": "ISC",
   "bdsxPlugin": true,
   "scripts": {

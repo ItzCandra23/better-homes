@@ -14,7 +14,10 @@ interface player_home {
     }
 }
 
-let config = {
+let config: {
+    normal_max_homes: number,
+    admin_max_homes: number,
+} = {
     "normal_max_homes": 5,
     "admin_max_homes": 10
 };
@@ -57,7 +60,7 @@ export class HomeAPI {
         this.addPlayer(player);
         const data = db[player.getName()];
 
-        if (name === "") {
+        if (name === ""||name.includes("§")||name.includes(",")||name.includes(" ")||name.includes(".")) {
             actor?.sendMessage(`§cInvalid name.`);
             return false;
         }
@@ -119,7 +122,7 @@ export class HomeAPI {
             return data.homes.name;
         }
 
-        actor?.sendMessage(`§aHomes: §r${data.homes.name}§r.`);
+        actor?.sendMessage(`§aHomes: §5[§r ${data.homes.name.toString().replace(/,/g, "§r§7, §r")} §r§5]`);
         return data.homes.name;
     }
     /**Check player home position. */
@@ -160,6 +163,28 @@ export class HomeAPI {
         actor?.sendMessage(`§aTeleport to §6${name}`);
         return true;
     }
+    /**Change max homes. */
+    static setMaxHomes(max: number, actor?: ServerPlayer): boolean {
+        if (max < 1||config.normal_max_homes === max) {
+            actor?.sendMessage(`§cInvalid number!`);
+            return false;
+        }
+
+        config.normal_max_homes=max;
+        actor?.sendMessage(`§aChange max homes to §e${max}`);
+        return true;
+    }
+    /**Change admin max homes. */
+    static setAdminMaxHomes(max: number, actor?: ServerPlayer): boolean {
+        if (max < 1||config.admin_max_homes === max) {
+            actor?.sendMessage(`§cInvalid number!`);
+            return false;
+        }
+
+        config.admin_max_homes=max;
+        actor?.sendMessage(`§aChange admin max homes to §e${max}`);
+        return true;
+    }
     /**WriteFile. */
     static writeFile(): void {
         writeFile(__dirname + "../../../config.json", JSON.stringify(config), (err) => {
@@ -176,6 +201,11 @@ export class HomeAPI {
                 console.log(`[Better-Homes] homes.json Saved!`);
             }
         });
+    }
+    /**WriteFileNoMessage. */
+    static writeFileNoMessage(): void {
+        writeFile(__dirname + "../../../config.json", JSON.stringify(config), () => {});
+        writeFile(__dirname + "../../../homes.json", JSON.stringify(db), () => {});
     }
 }
 
