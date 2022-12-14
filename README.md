@@ -2,7 +2,7 @@
 # Better-Homes
 Better-Homes is a plugin to teleport back home.
 
-#Commands
+# Commands
 * /homeui - Open home-ui menu.
 * /home - Teleport/check your home.
 * /listhome - Check your homes.
