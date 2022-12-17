@@ -16,6 +16,7 @@ Better-Homes is a plugin to teleport back home.
 * [Author](https://github.com/ItzCandra23)
 * [BetterHomes Github](https://github.com/ItzCandra23/better-homes)
 * [Click for Download](https://github.com/ItzCandra23/better-homes/archive/refs/heads/main.zip)
+* [Share idea or report bugs](https://github.com/ItzCandra23/better-homes/issues/new)
 
 
 # Changelogs
