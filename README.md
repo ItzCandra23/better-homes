@@ -18,8 +18,3 @@ Better-Homes is a plugin to teleport back home.
 * [Click for Download](https://github.com/ItzCandra23/better-homes/archive/refs/heads/main.zip)
 * [Share idea or report bugs](https://github.com/ItzCandra23/better-homes/issues/new)
 
-
-# Changelogs
-## 1.0.1
-* Added new command for change maximum homes: /setmaxhomes < normal | admin > < max: number >
-* Fixes remove home button in /homeui
