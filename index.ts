@@ -150,7 +150,10 @@ export namespace HomeMain {
     }
 }
 
-events.playerJoin.on((ev) => { HomeMain.addPlayer(ev.player) });
+events.playerJoin.on((ev) => {
+    HomeMain.addPlayer(ev.player);
+    PlayerHomeLimite.addPlayerHomeLimits(ev.player);
+});
 
 events.serverOpen.on(() => {
     require("./src");
