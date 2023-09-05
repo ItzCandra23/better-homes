@@ -3,13 +3,12 @@
 Better-Homes is a plugin to teleport back home.
 
 # Commands
-* /homeui - Open home-ui menu.
-* /home - Teleport/check your home.
-* /listhome - Check your homes.
-* /addhome - Create a new home position.
-* /removehome - Delete/Remove your home position.
-* /setmaxhomes - Change maximum player homes.
-* /save_home - `For Console.`
+* `/homeui` - `Open home-ui menu.`
+* `/home` - `Teleport/check your home.`
+* `/listhome` - `Check your homes.`
+* `/addhome` - `Create a new home position.`
+* `/removehome` - `Delete/Remove your home position.`
+* `/sethomeslimit` - `Change maximum player homes.`
 
 
 # Github

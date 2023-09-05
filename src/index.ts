@@ -1,94 +1,262 @@
-import { ServerPlayer } from "bdsx/bds/player";
-import { send, sendMessage } from "./utils/message";
-import * as path from "path";
-import * as fs from "fs";
+import { DimensionId } from "bdsx/bds/actor";
+import { BlockPos } from "bdsx/bds/blockpos";
+import { CommandPermissionLevel, CommandPosition, PlayerCommandSelector } from "bdsx/bds/command";
+import { command } from "bdsx/command";
+import { CxxString, int32_t } from "bdsx/nativetype";
+import { HomeMain } from "..";
+import { HomeForm } from "./form";
+import { send } from "./utils/message";
 
-const hlPath = path.join(__dirname, "..", "home_limits.json");
-let homeLimits: {
-    normal_home_limits: number;
-    player_home_limits: Record<string, number>;
-} = {
-    normal_home_limits: 5,
-    player_home_limits: {},
-};
-
-try { homeLimits = require(hlPath) } catch(e) {}
-
-export namespace PlayerHomeLimite {
-    export function setNormalHomeLimits(limit: number, message: boolean = false, actor?: ServerPlayer): void {
-        const send = new sendMessage(actor, message);
-        if (limit < 0) {
-            send.error(`Invalid limit`);
-            return;
-        }
-
-        send.success(`Success to set &f${limit}&r in normal home limits`);
-        homeLimits.normal_home_limits=limit;
+/**HomeUI */
+command.register("homeui", "Open home-ui menu.")
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
     }
+    if (!pl.isPlayer()) return;
 
-    export function getNormalHomeLimits(): number {
-        if (homeLimits.normal_home_limits < 0) return 0;
-        return homeLimits.normal_home_limits;
+    HomeForm.menu(pl);
+}, {});
+
+/**AddHome */
+command.register("addhome", "Create a new home position.")
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
     }
+    if (!pl.isPlayer()) return;
 
-    export function addPlayerHomeLimits(player: ServerPlayer): boolean {
-        const xuid = player.getXuid();
-        if (xuid === "") return false;
-        if (homeLimits.player_home_limits.hasOwnProperty(xuid)) return false;
-        homeLimits.player_home_limits[xuid]=getNormalHomeLimits();
-        return true;
+    HomeForm.add(pl);
+}, {})
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
     }
+    if (!pl.isPlayer()) return;
 
-    export function addHomeLimits(player: ServerPlayer, limit: number): boolean {
-        addPlayerHomeLimits(player);
-        const xuid = player.getXuid();
-        if (xuid === "") return false;
-        if (limit < 1) return false;
-        homeLimits.player_home_limits[xuid]+=limit;
-        return true;
+    HomeMain.createHome(pl, p.name, BlockPos.create(pl.getPosition()), pl.getDimensionId())
+    .then((home) => {
+        send.success(`Create §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${DimensionId[home.dimension]}§8]`, pl);
+    })
+    .catch((err) => {
+        if (err) send.error(err, pl);
+    });
+}, {
+    name: CxxString
+})
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
     }
+    if (!pl.isPlayer()) return;
 
-    export function removeHomeLimits(player: ServerPlayer, limit: number): boolean {
-        addPlayerHomeLimits(player);
-        const xuid = player.getXuid();
-        if (xuid === "") return false;
-        if (limit < 1) return false;
-        if ((homeLimits.player_home_limits[xuid]-limit) < 0) {
-            homeLimits.player_home_limits[xuid]=0;
-            return true;
-        }
-        homeLimits.player_home_limits[xuid]-=limit;
-        return true;
+    let pos = BlockPos.create(p.pos.getPosition(o));
+
+    HomeMain.createHome(pl, p.name, pos, pl.getDimensionId())
+    .then((home) => {
+        send.success(`Create §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${DimensionId[home.dimension]}§8]`, pl);
+    })
+    .catch((err) => {
+        if (err) send.error(err, pl);
+    });;
+}, {
+    name: CxxString,
+    pos: CommandPosition
+})
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
     }
+    if (!pl.isPlayer()) return;
 
-    export function setHomeLimits(player: ServerPlayer, limit: number): boolean {
-        addPlayerHomeLimits(player);
-        const xuid = player.getXuid();
-        if (xuid === "") return false;
-        if (limit < 0) {
-            homeLimits.player_home_limits[xuid]=0;
-            return true;
-        }
-        homeLimits.player_home_limits[xuid]=limit;
-        return true;
+    let pos = BlockPos.create(p.pos.getPosition(o));
+
+    HomeMain.createHome(pl, p.name, pos, p.dimension)
+    .then((home) => {
+        send.success(`Create §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${DimensionId[home.dimension]}§8]`, pl);
+    })
+    .catch((err) => {
+        if (err) send.error(err, pl);
+    });;
+}, {
+    name: CxxString,
+    pos: CommandPosition,
+    dimension: command.enum("DimensionId", DimensionId)
+});
+
+/**SetHome */
+command.register("sethome", "Create a new home position.")
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
     }
+    if (!pl.isPlayer()) return;
 
-    export function getHomeLimits(player: ServerPlayer): number|null {
-        addPlayerHomeLimits(player);
-        const xuid = player.getXuid();
-        if (xuid === "") return null;
-        return homeLimits.player_home_limits[xuid];
+    HomeMain.setHome(pl, p.name, BlockPos.create(pl.getPosition()), pl.getDimensionId())
+    .then((home) => {
+        send.success(`Set §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${DimensionId[home.dimension]}§8]`, pl);
+    })
+    .catch((err) => {
+        if (err) send.error(err, pl);
+    });
+}, {
+    name: CxxString
+})
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
     }
+    if (!pl.isPlayer()) return;
 
-    export function save(message: boolean = false): void {
-        fs.writeFile(hlPath, JSON.stringify(homeLimits, null, 2), "utf8", (err) => {
-            if (message) {
-                if (err) {
-                    send.error(`home_limits.json ${err}`);
-                    throw err;
-                }
-                else send.success(`home_limits.json Saved!`);
-            }
+    let pos = BlockPos.create(p.pos.getPosition(o));
+
+    HomeMain.setHome(pl, p.name, pos, pl.getDimensionId())
+    .then((home) => {
+        send.success(`Set §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${DimensionId[home.dimension]}§8]`, pl);
+    })
+    .catch((err) => {
+        if (err) send.error(err, pl);
+    });
+}, {
+    name: CxxString,
+    pos: CommandPosition
+})
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
+    }
+    if (!pl.isPlayer()) return;
+
+    let pos = BlockPos.create(p.pos.getPosition(o));
+
+    HomeMain.setHome(pl, p.name, pos, p.dimension)
+    .then((home) => {
+        send.success(`Set §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${DimensionId[home.dimension]}§8]`, pl);
+    })
+    .catch((err) => {
+        if (err) send.error(err, pl);
+    });
+}, {
+    name: CxxString,
+    pos: CommandPosition,
+    dimension: command.enum("DimensionId", DimensionId)
+});
+
+/**RemoveHome */
+command.register("removehome", "Delete your home position.")
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
+    }
+    if (!pl.isPlayer()) return;
+
+    HomeForm.remove(pl);
+}, {})
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
+    }
+    if (!pl.isPlayer()) return;
+
+    HomeMain.deleteHome(pl, p.name)
+    .then((home)  => {
+        send.success(`Delete §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${DimensionId[home.dimension]}§8]`, pl);
+    })
+    .catch((err) => {
+        if (err) send.error(err, pl);
+    });
+}, {
+    name: CxxString
+});
+
+/**Home */
+command.register("home", "Teleport to your home position.")
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
+    }
+    if (!pl.isPlayer()) return;
+
+    HomeForm.teleport(pl);
+}, {})
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
+    }
+    if (!pl.isPlayer()) return;
+
+    HomeMain.teleport(pl, p.name);
+}, {
+    name: CxxString
+});
+
+/**ListHome */
+command.register("listhome", "Check your homes.")
+.overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        send.error(`This command not for console`);
+        return;
+    }
+    if (!pl.isPlayer()) return;
+
+    pl.sendMessage(`§aHomes: §r${(HomeMain.getHomesName(pl) ?? []).toString().replace(/,/g, "§r§a, §r")}`);
+}, {});
+
+/**SetHomesLimit */
+command.register("sethomeslimit", "Change limit player homes.", CommandPermissionLevel.Operator)
+.overload((p, o) => {
+    const pl = o.getEntity()?.getNetworkIdentifier().getActor() ?? undefined;
+
+    HomeMain.setDefaultLimit(p.maximum)
+    .then(() => {
+        send.success(`Set §r${p.maximum}§a as default homes limit`, pl);
+    })
+    .catch((err) => {
+        if (err) send.error(err, pl);
+    });
+}, {
+    normal: command.enum("set_normal", "normal"),
+    maximum: int32_t
+})
+.overload((p, o) => {
+    const pl = o.getEntity()?.getNetworkIdentifier().getActor() ?? undefined;
+
+    for (const target of p.target.newResults(o)) {
+        HomeMain.setHomesLimit(target, p.maximum)
+        .then(() => {
+            send.success(`Set §r${p.maximum}§a as §r${target.getName()}§a homes limit`, pl);
+        })
+        .catch((err) => {
+            if (err) send.error(err, pl);
         });
     }
-}
+}, {
+    player: command.enum("set_player", "player"),
+    target: PlayerCommandSelector,
+    maximum: int32_t
+});

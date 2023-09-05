@@ -1,105 +1,266 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PlayerHomeLimite = void 0;
+const actor_1 = require("bdsx/bds/actor");
+const blockpos_1 = require("bdsx/bds/blockpos");
+const command_1 = require("bdsx/bds/command");
+const command_2 = require("bdsx/command");
+const nativetype_1 = require("bdsx/nativetype");
+const __1 = require("..");
+const form_1 = require("./form");
 const message_1 = require("./utils/message");
-const path = require("path");
-const fs = require("fs");
-const hlPath = path.join(__dirname, "..", "home_limits.json");
-let homeLimits = {
-    normal_home_limits: 5,
-    player_home_limits: {},
-};
-try {
-    homeLimits = require(hlPath);
-}
-catch (e) { }
-var PlayerHomeLimite;
-(function (PlayerHomeLimite) {
-    function setNormalHomeLimits(limit, message = false, actor) {
-        const send = new message_1.sendMessage(actor, message);
-        if (limit < 0) {
-            send.error(`Invalid limit`);
-            return;
-        }
-        send.success(`Success to set &f${limit}&r in normal home limits`);
-        homeLimits.normal_home_limits = limit;
+/**HomeUI */
+command_2.command.register("homeui", "Open home-ui menu.")
+    .overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
     }
-    PlayerHomeLimite.setNormalHomeLimits = setNormalHomeLimits;
-    function getNormalHomeLimits() {
-        if (homeLimits.normal_home_limits < 0)
-            return 0;
-        return homeLimits.normal_home_limits;
+    if (!pl.isPlayer())
+        return;
+    form_1.HomeForm.menu(pl);
+}, {});
+/**AddHome */
+command_2.command.register("addhome", "Create a new home position.")
+    .overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
     }
-    PlayerHomeLimite.getNormalHomeLimits = getNormalHomeLimits;
-    function addPlayerHomeLimits(player) {
-        const xuid = player.getXuid();
-        if (xuid === "")
-            return false;
-        if (homeLimits.player_home_limits.hasOwnProperty(xuid))
-            return false;
-        homeLimits.player_home_limits[xuid] = getNormalHomeLimits();
-        return true;
+    if (!pl.isPlayer())
+        return;
+    form_1.HomeForm.add(pl);
+}, {})
+    .overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
     }
-    PlayerHomeLimite.addPlayerHomeLimits = addPlayerHomeLimits;
-    function addHomeLimits(player, limit) {
-        addPlayerHomeLimits(player);
-        const xuid = player.getXuid();
-        if (xuid === "")
-            return false;
-        if (limit < 1)
-            return false;
-        homeLimits.player_home_limits[xuid] += limit;
-        return true;
+    if (!pl.isPlayer())
+        return;
+    __1.HomeMain.createHome(pl, p.name, blockpos_1.BlockPos.create(pl.getPosition()), pl.getDimensionId())
+        .then((home) => {
+        message_1.send.success(`Create §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${actor_1.DimensionId[home.dimension]}§8]`, pl);
+    })
+        .catch((err) => {
+        if (err)
+            message_1.send.error(err, pl);
+    });
+}, {
+    name: nativetype_1.CxxString
+})
+    .overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
     }
-    PlayerHomeLimite.addHomeLimits = addHomeLimits;
-    function removeHomeLimits(player, limit) {
-        addPlayerHomeLimits(player);
-        const xuid = player.getXuid();
-        if (xuid === "")
-            return false;
-        if (limit < 1)
-            return false;
-        if ((homeLimits.player_home_limits[xuid] - limit) < 0) {
-            homeLimits.player_home_limits[xuid] = 0;
-            return true;
-        }
-        homeLimits.player_home_limits[xuid] -= limit;
-        return true;
+    if (!pl.isPlayer())
+        return;
+    let pos = blockpos_1.BlockPos.create(p.pos.getPosition(o));
+    __1.HomeMain.createHome(pl, p.name, pos, pl.getDimensionId())
+        .then((home) => {
+        message_1.send.success(`Create §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${actor_1.DimensionId[home.dimension]}§8]`, pl);
+    })
+        .catch((err) => {
+        if (err)
+            message_1.send.error(err, pl);
+    });
+    ;
+}, {
+    name: nativetype_1.CxxString,
+    pos: command_1.CommandPosition
+})
+    .overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
     }
-    PlayerHomeLimite.removeHomeLimits = removeHomeLimits;
-    function setHomeLimits(player, limit) {
-        addPlayerHomeLimits(player);
-        const xuid = player.getXuid();
-        if (xuid === "")
-            return false;
-        if (limit < 0) {
-            homeLimits.player_home_limits[xuid] = 0;
-            return true;
-        }
-        homeLimits.player_home_limits[xuid] = limit;
-        return true;
+    if (!pl.isPlayer())
+        return;
+    let pos = blockpos_1.BlockPos.create(p.pos.getPosition(o));
+    __1.HomeMain.createHome(pl, p.name, pos, p.dimension)
+        .then((home) => {
+        message_1.send.success(`Create §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${actor_1.DimensionId[home.dimension]}§8]`, pl);
+    })
+        .catch((err) => {
+        if (err)
+            message_1.send.error(err, pl);
+    });
+    ;
+}, {
+    name: nativetype_1.CxxString,
+    pos: command_1.CommandPosition,
+    dimension: command_2.command.enum("DimensionId", actor_1.DimensionId)
+});
+/**SetHome */
+command_2.command.register("sethome", "Create a new home position.")
+    .overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
     }
-    PlayerHomeLimite.setHomeLimits = setHomeLimits;
-    function getHomeLimits(player) {
-        addPlayerHomeLimits(player);
-        const xuid = player.getXuid();
-        if (xuid === "")
-            return null;
-        return homeLimits.player_home_limits[xuid];
+    if (!pl.isPlayer())
+        return;
+    __1.HomeMain.setHome(pl, p.name, blockpos_1.BlockPos.create(pl.getPosition()), pl.getDimensionId())
+        .then((home) => {
+        message_1.send.success(`Set §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${actor_1.DimensionId[home.dimension]}§8]`, pl);
+    })
+        .catch((err) => {
+        if (err)
+            message_1.send.error(err, pl);
+    });
+}, {
+    name: nativetype_1.CxxString
+})
+    .overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
     }
-    PlayerHomeLimite.getHomeLimits = getHomeLimits;
-    function save(message = false) {
-        fs.writeFile(hlPath, JSON.stringify(homeLimits, null, 2), "utf8", (err) => {
-            if (message) {
-                if (err) {
-                    message_1.send.error(`home_limits.json ${err}`);
-                    throw err;
-                }
-                else
-                    message_1.send.success(`home_limits.json Saved!`);
-            }
+    if (!pl.isPlayer())
+        return;
+    let pos = blockpos_1.BlockPos.create(p.pos.getPosition(o));
+    __1.HomeMain.setHome(pl, p.name, pos, pl.getDimensionId())
+        .then((home) => {
+        message_1.send.success(`Set §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${actor_1.DimensionId[home.dimension]}§8]`, pl);
+    })
+        .catch((err) => {
+        if (err)
+            message_1.send.error(err, pl);
+    });
+}, {
+    name: nativetype_1.CxxString,
+    pos: command_1.CommandPosition
+})
+    .overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
+    }
+    if (!pl.isPlayer())
+        return;
+    let pos = blockpos_1.BlockPos.create(p.pos.getPosition(o));
+    __1.HomeMain.setHome(pl, p.name, pos, p.dimension)
+        .then((home) => {
+        message_1.send.success(`Set §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${actor_1.DimensionId[home.dimension]}§8]`, pl);
+    })
+        .catch((err) => {
+        if (err)
+            message_1.send.error(err, pl);
+    });
+}, {
+    name: nativetype_1.CxxString,
+    pos: command_1.CommandPosition,
+    dimension: command_2.command.enum("DimensionId", actor_1.DimensionId)
+});
+/**RemoveHome */
+command_2.command.register("removehome", "Delete your home position.")
+    .overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
+    }
+    if (!pl.isPlayer())
+        return;
+    form_1.HomeForm.remove(pl);
+}, {})
+    .overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
+    }
+    if (!pl.isPlayer())
+        return;
+    __1.HomeMain.deleteHome(pl, p.name)
+        .then((home) => {
+        message_1.send.success(`Delete §8[§r${home.name}§r, §7[§rx: ${home.pos.x}, y: ${home.pos.y}, z: ${home.pos.z}§7]§r ${actor_1.DimensionId[home.dimension]}§8]`, pl);
+    })
+        .catch((err) => {
+        if (err)
+            message_1.send.error(err, pl);
+    });
+}, {
+    name: nativetype_1.CxxString
+});
+/**Home */
+command_2.command.register("home", "Teleport to your home position.")
+    .overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
+    }
+    if (!pl.isPlayer())
+        return;
+    form_1.HomeForm.teleport(pl);
+}, {})
+    .overload((p, o) => {
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
+    }
+    if (!pl.isPlayer())
+        return;
+    __1.HomeMain.teleport(pl, p.name);
+}, {
+    name: nativetype_1.CxxString
+});
+/**ListHome */
+command_2.command.register("listhome", "Check your homes.")
+    .overload((p, o) => {
+    var _a;
+    const pl = o.getEntity();
+    if (!pl) {
+        message_1.send.error(`This command not for console`);
+        return;
+    }
+    if (!pl.isPlayer())
+        return;
+    pl.sendMessage(`§aHomes: §r${((_a = __1.HomeMain.getHomesName(pl)) !== null && _a !== void 0 ? _a : []).toString().replace(/,/g, "§r§a, §r")}`);
+}, {});
+/**SetHomesLimit */
+command_2.command.register("sethomeslimit", "Change limit player homes.", command_1.CommandPermissionLevel.Operator)
+    .overload((p, o) => {
+    var _a, _b;
+    const pl = (_b = (_a = o.getEntity()) === null || _a === void 0 ? void 0 : _a.getNetworkIdentifier().getActor()) !== null && _b !== void 0 ? _b : undefined;
+    __1.HomeMain.setDefaultLimit(p.maximum)
+        .then(() => {
+        message_1.send.success(`Set §r${p.maximum}§a as default homes limit`, pl);
+    })
+        .catch((err) => {
+        if (err)
+            message_1.send.error(err, pl);
+    });
+}, {
+    normal: command_2.command.enum("set_normal", "normal"),
+    maximum: nativetype_1.int32_t
+})
+    .overload((p, o) => {
+    var _a, _b;
+    const pl = (_b = (_a = o.getEntity()) === null || _a === void 0 ? void 0 : _a.getNetworkIdentifier().getActor()) !== null && _b !== void 0 ? _b : undefined;
+    for (const target of p.target.newResults(o)) {
+        __1.HomeMain.setHomesLimit(target, p.maximum)
+            .then(() => {
+            message_1.send.success(`Set §r${p.maximum}§a as §r${target.getName()}§a homes limit`, pl);
+        })
+            .catch((err) => {
+            if (err)
+                message_1.send.error(err, pl);
         });
     }
-    PlayerHomeLimite.save = save;
-})(PlayerHomeLimite = exports.PlayerHomeLimite || (exports.PlayerHomeLimite = {}));
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJpbmRleC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7QUFDQSw2Q0FBb0Q7QUFDcEQsNkJBQTZCO0FBQzdCLHlCQUF5QjtBQUV6QixNQUFNLE1BQU0sR0FBRyxJQUFJLENBQUMsSUFBSSxDQUFDLFNBQVMsRUFBRSxJQUFJLEVBQUUsa0JBQWtCLENBQUMsQ0FBQztBQUM5RCxJQUFJLFVBQVUsR0FHVjtJQUNBLGtCQUFrQixFQUFFLENBQUM7SUFDckIsa0JBQWtCLEVBQUUsRUFBRTtDQUN6QixDQUFDO0FBRUYsSUFBSTtJQUFFLFVBQVUsR0FBRyxPQUFPLENBQUMsTUFBTSxDQUFDLENBQUE7Q0FBRTtBQUFDLE9BQU0sQ0FBQyxFQUFFLEdBQUU7QUFFaEQsSUFBaUIsZ0JBQWdCLENBNkVoQztBQTdFRCxXQUFpQixnQkFBZ0I7SUFDN0IsU0FBZ0IsbUJBQW1CLENBQUMsS0FBYSxFQUFFLFVBQW1CLEtBQUssRUFBRSxLQUFvQjtRQUM3RixNQUFNLElBQUksR0FBRyxJQUFJLHFCQUFXLENBQUMsS0FBSyxFQUFFLE9BQU8sQ0FBQyxDQUFDO1FBQzdDLElBQUksS0FBSyxHQUFHLENBQUMsRUFBRTtZQUNYLElBQUksQ0FBQyxLQUFLLENBQUMsZUFBZSxDQUFDLENBQUM7WUFDNUIsT0FBTztTQUNWO1FBRUQsSUFBSSxDQUFDLE9BQU8sQ0FBQyxvQkFBb0IsS0FBSywwQkFBMEIsQ0FBQyxDQUFDO1FBQ2xFLFVBQVUsQ0FBQyxrQkFBa0IsR0FBQyxLQUFLLENBQUM7SUFDeEMsQ0FBQztJQVRlLG9DQUFtQixzQkFTbEMsQ0FBQTtJQUVELFNBQWdCLG1CQUFtQjtRQUMvQixJQUFJLFVBQVUsQ0FBQyxrQkFBa0IsR0FBRyxDQUFDO1lBQUUsT0FBTyxDQUFDLENBQUM7UUFDaEQsT0FBTyxVQUFVLENBQUMsa0JBQWtCLENBQUM7SUFDekMsQ0FBQztJQUhlLG9DQUFtQixzQkFHbEMsQ0FBQTtJQUVELFNBQWdC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
+}, {
+    player: command_2.command.enum("set_player", "player"),
+    target: command_1.PlayerCommandSelector,
+    maximum: nativetype_1.int32_t
+});
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJpbmRleC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUFBLDBDQUE2QztBQUM3QyxnREFBNkM7QUFDN0MsOENBQWtHO0FBQ2xHLDBDQUF1QztBQUN2QyxnREFBcUQ7QUFDckQsMEJBQThCO0FBQzlCLGlDQUFrQztBQUNsQyw2Q0FBdUM7QUFFdkMsWUFBWTtBQUNaLGlCQUFPLENBQUMsUUFBUSxDQUFDLFFBQVEsRUFBRSxvQkFBb0IsQ0FBQztLQUMvQyxRQUFRLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQyxFQUFFLEVBQUU7SUFDZixNQUFNLEVBQUUsR0FBRyxDQUFDLENBQUMsU0FBUyxFQUFFLENBQUM7SUFDekIsSUFBSSxDQUFDLEVBQUUsRUFBRTtRQUNMLGNBQUksQ0FBQyxLQUFLLENBQUMsOEJBQThCLENBQUMsQ0FBQztRQUMzQyxPQUFPO0tBQ1Y7SUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLFFBQVEsRUFBRTtRQUFFLE9BQU87SUFFM0IsZUFBUSxDQUFDLElBQUksQ0FBQyxFQUFFLENBQUMsQ0FBQztBQUN0QixDQUFDLEVBQUUsRUFBRSxDQUFDLENBQUM7QUFFUCxhQUFhO0FBQ2IsaUJBQU8sQ0FBQyxRQUFRLENBQUMsU0FBUyxFQUFFLDZCQUE2QixDQUFDO0tBQ3pELFFBQVEsQ0FBQyxDQUFDLENBQUMsRUFBRSxDQUFDLEVBQUUsRUFBRTtJQUNmLE1BQU0sRUFBRSxHQUFHLENBQUMsQ0FBQyxTQUFTLEVBQUUsQ0FBQztJQUN6QixJQUFJLENBQUMsRUFBRSxFQUFFO1FBQ0wsY0FBSSxDQUFDLEtBQUssQ0FBQyw4QkFBOEIsQ0FBQyxDQUFDO1FBQzNDLE9BQU87S0FDVjtJQUNELElBQUksQ0FBQyxFQUFFLENBQUMsUUFBUSxFQUFFO1FBQUUsT0FBTztJQUUzQixlQUFRLENBQUMsR0FBRyxDQUFDLEVBQUUsQ0FBQyxDQUFDO0FBQ3JCLENBQUMsRUFBRSxFQUFFLENBQUM7S0FDTCxRQUFRLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQyxFQUFFLEVBQUU7SUFDZixNQUFNLEVBQUUsR0FBRyxDQUFDLENBQUMsU0FBUyxFQUFFLENBQUM7SUFDekIsSUFBSSxDQUFDLEVBQUUsRUFBRTtRQUNMLGNBQUksQ0FBQyxLQUFLLENBQUMsOEJBQThCLENBQUMsQ0FBQztRQUMzQyxPQUFPO0tBQ1Y7SUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLFFBQVEsRUFBRTtRQUFFLE9BQU87SUFFM0IsWUFBUSxDQUFDLFVBQVUsQ0FBQyxFQUFFLEVBQUUsQ0FBQyxDQUFDLElBQUksRUFBRSxtQkFBUSxDQUFDLE1BQU0sQ0FBQyxFQUFFLENBQUMsV0FBVyxFQUFFLENBQUMsRUFBRSxFQUFFLENBQUMsY0FBYyxFQUFFLENBQUM7U0FDdEYsSUFBSSxDQUFDLENBQUMsSUFBSSxFQUFFLEVBQUU7UUFDWCxjQUFJLENBQUMsT0FBTyxDQUFDLGVBQWUsSUFBSSxDQUFDLElBQUksZUFBZSxJQUFJLENBQUMsR0FBRyxDQUFDLENBQUMsUUFBUSxJQUFJLENBQUMsR0FBRyxDQUFDLENBQUMsUUFBUSxJQUFJLENBQUMsR0FBRyxDQUFDLENBQUMsU0FBUyxtQkFBVyxDQUFDLElBQUksQ0FBQyxTQUFTLENBQUMsS0FBSyxFQUFFLEVBQUUsQ0FBQyxDQUFDO0lBQ3JKLENBQUMsQ0FBQztTQUNELEtBQUssQ0FBQyxDQUFDLEdBQUcsRUFBRSxFQUFFO1FBQ1gsSUFBSSxHQUFHO1lBQUUsY0FBSSxDQUFDLEtBQUssQ0FBQyxHQUFHLEVBQUUsRUFBRSxDQUFDLENBQUM7SUFDakMsQ0FBQyxDQUFDLENBQUM7QUFDUCxDQUFDLEVBQUU7SUFDQyxJQUFJLEVBQUUsc0JBQVM7Q0FDbEIsQ0FBQztLQUNELFFBQVEsQ0FBQyxDQUFDLENBQUMsRUFBRSxDQUFDLEVBQUUsRUFBRTtJQUNmLE1BQU0sRUFBRSxHQUFHLENBQUMsQ0FBQyxTQUFTLEVBQUUsQ0FBQztJQUN6QixJQUFJLENBQUMsRUFBRSxFQUFFO1FBQ0wsY0FBSSxDQUFDLEtBQUssQ0FBQyw4QkFBOEIsQ0FBQyxDQUFDO1FBQzNDLE9BQU87S0FDVjtJQUNELElBQUksQ0FBQyxFQUFFLENBQUMsUUFBUSxFQUFFO1FBQUUsT0FBTztJQUUzQixJQUFJLEdBQUcsR0FBRyxtQkFBUSxDQUFDLE1BQU0sQ0FBQyxDQUFDLENBQUMsR0FBRyxDQUFDLFdBQVcsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDO0lBRWhELFlBQVEsQ0FBQyxVQUFVLENBQUMsRUFBRSxFQUFFLENBQUMsQ0FBQyxJQUFJLEVBQUUsR0FBRyxFQUFFLEVBQUUsQ0FBQyxjQUFjLEVBQUUsQ0FBQztTQUN4RCxJQUFJLENBQUMsQ0FBQyxJQUFJLEVBQUUsRUFBRTtRQUNYLGNBQUksQ0FBQyxPQUFPLENBQUMsZUFBZSxJQUFJLENBQUMsSUFBSSxlQUFlLElBQUksQ0FBQyxHQUFHLENBQUMsQ0FBQyxRQUFRLElBQUksQ0FBQyxHQUFHLENBQUMsQ0FBQyxRQUFRLElBQUksQ0FBQyxHQUFHLENBQUMsQ0FBQyxTQUFTLG1CQUFXLENBQUMsSUFBSSxDQUFDLFNBQVMsQ0FBQyxLQUFLLEVBQUUsRUFBRSxDQUFDLENBQUM7SUFDckosQ0FBQyxDQUFDO1NBQ0QsS0FBSyxDQUFDLENBQUMsR0FBRyxFQUFFLEVBQUU7UUFDWCxJQUFJLEdBQUc7WUFBRSxjQUFJLENBQUMsS0FBSyxDQUFDLEdBQUcsRUFBRSxFQUFFLENBQUMsQ0FBQztJQUNqQyxDQUFDLENBQUMsQ0FBQztJQUFBLENBQUM7QUFDUixDQUFDLEVBQUU7SUFDQyxJQUFJLEVBQUUsc0JBQVM7SUFDZixHQUFHLEVBQUUseUJBQWU7Q0FDdkIsQ0FBQztLQUNELFFBQVEsQ0FBQyxDQUFDLENBQUMsRUFBRSxDQUFDLEVBQUUsRUFBRTtJQUNmLE1BQU0sRUFBRSxHQUFHLENBQUMsQ0FBQyxTQUFTLEVBQUUsQ0FBQztJQUN6QixJQUFJLENBQUMsRUFBRSxFQUFFO1FBQ0wsY0FBSSxDQUFDLEtBQUssQ0FBQyw4QkFBOEIsQ0FBQyxDQUFDO1FBQzNDLE9BQU87S0FDVjtJQUNELElBQUksQ0FBQyxFQUFFLENBQUMsUUFBUSxFQUFFO1FBQUUsT0FBTztJQUUzQixJQUFJLEdBQUcsR0FBRyxtQkFBUSxDQUFDLE1BQU0sQ0FBQyxDQUFDLENBQUMsR0FBRyxDQUFDLFdBQVcsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDO0lBRWhELFlBQVEsQ0FBQyxVQUFVLENBQUMsRUFBRSxFQUFFLENBQUMsQ0FBQyxJQUFJLEVBQUUsR0FBRyxFQUFFLENBQUMsQ0FBQyxTQUFTLENBQUM7U0FDaEQsSUFBSSxDQUFDLENBQUMsSUFBSSxFQUFFLEVBQUU7UUFDWCxjQUFJLENBQUMsT0FBTyxDQUFDLGVBQWUsSUFBSSxDQUFDLElBQUksZUFBZSxJQUFJLENBQUMsR0FBRyxDQUFDLENBQUMsUUFBUSxJQUFJLENBQUMsR0FBRyxDQUFDLENBQUMsUUFBUSxJQUFJLENBQUMsR0FBRyxDQUFDLENBQUMsU0FBUyxtQkFBVyxDQUFDLElBQUksQ0FBQyxTQUFTLENBQUMsS0FBSyxFQUFFLEVBQUUsQ0FBQyxDQUFDO0lBQ3JKLENBQUMsQ0FBQztTQUNELEtBQUssQ0FBQyxDQUFDLEdBQUcsRUFBRSxFQUFFO1FBQ1gsSUFBSSxHQUFHO1lBQUUsY0FBSSxDQUFDLEtBQUssQ0FBQyxHQUFHLEVBQUUsRUFBRSxDQUFDLENBQUM7SUFDakMsQ0FBQyxDQUFDLENBQUM7SUFBQSxDQUFDO0FBQ1IsQ0FBQyxFQUFFO0lBQ0MsSUFBSSxFQUFFLHNCQUFTO0lBQ2YsR0FBRyxFQUFFLHlCQUFlO0lBQ3BCLFNBQVMsRUFBRSxpQkFBTyxDQUFDLElBQUksQ0FBQyxhQUFhLEVBQUUsbUJBQVcsQ0FBQztDQUN0RCxDQUFDLENBQUM7QUFFSCxhQUFhO0FBQ2IsaUJBQU8sQ0FBQyxRQUFRLENBQUMsU0FBUyxFQUFFLDZCQUE2QixDQUFDO0tBQ3pELFFBQVEsQ0FBQyxDQUFDLENBQUMsRUFBRSxDQUFDLEVBQUUsRUFBRTtJQUNmLE1BQU0sRUFBRSxHQUFHLENBQUMsQ0FBQyxTQUFTLEVBQUUsQ0FBQztJQUN6QixJQUFJLENBQUMsRUFBRSxFQUFFO1FBQ0wsY0FBSSxDQUFDLEtBQUssQ0FBQyw4QkFBOEIsQ0FBQyxDQUFDO1FBQzNDLE9BQU87S0FDVjtJQUNELElBQUksQ0FBQyxFQUFFLENBQUMsUUFBUSxFQUFFO1FBQUUsT0FBTztJQUUzQixZQUFRLENBQUMsT0FBTyxDQUFDLEVBQUUsRUFBRSxDQUFDLENBQUMsSUFBSSxFQUFFLG1CQUFRLENBQUMsTUFBTSxDQUFDLEVBQUUsQ0FBQyxXQUFXLEVBQUUsQ0FBQyxFQUFFLEVBQUUsQ0FBQyxjQUFjLEVBQUUsQ0FBQztTQUNuRixJQUFJLENBQUMsQ0FBQyxJQUFJLEVBQUUsRUFBRTtRQUNYLGNBQUksQ0FBQyxPQUFPLENBQUMsWUFBWSxJQUFJLENBQUMsSUFBSSxlQUFlLElBQUksQ0FBQyxHQUFHLENBQUMsQ0FBQyxRQUFRLElBQUksQ0FBQyxHQUFHLENBQUMsQ0FBQyxRQUFRLElBQUksQ0FBQyxHQUFHLENBQUMsQ0FBQyxTQUFTLG1CQUFXLENBQUMsSUFBSSxDQUFDLFNBQVMsQ0FBQyxLQUFLLEVBQUUsRUFBRSxDQUFDLENBQUM7SUFDbEosQ0FBQyxDQUFDO1NBQ0QsS0FBSyxDQUFDLENBQUMsR0FBRyxFQUFFLEVBQUU7UUFDWCxJQUFJLEdBQUc7WUFBRSxjQUFJLENBQUMsS0FBSyxDQUFDLEdBQUcsRUFBRSxFQUFFLENBQUMsQ0FBQztJQUNqQyxDQUFDLENBQUMsQ0FBQztBQUNQLENBQUMsRUFBRTtJQUNDLElBQUksRUFBRSxzQkFBUztDQUNsQixDQUFDO0tBQ0QsUUFBUSxDQUFDLENBQUMsQ0FBQyxFQUFFLENBQUMsRUFBRSxFQUFFO0lBQ2YsTUFBTSxFQUFFLEdBQUcsQ0FBQyxDQUFDLFNBQVMsRUFBRSxDQUFDO0lBQ3pCLElBQUksQ0FBQyxFQUFFLEVBQUU7UUFDTCxjQUFJLENBQUMsS0FBSyxDQUFDLDhCQUE4QixDQUFDLENBQUM7UUFDM0MsT0FBTztLQUNWO0lBQ0QsSUFBSSxDQUFDLEVBQUUsQ0FBQyxRQUFRLEVBQUU7UUFBRSxPQUFPO0lBRTNCLElBQUksR0FBRyxHQUFHLG1CQUFRLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FBQyxHQUFHLENBQUMsV0FBVyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUM7SUFFaEQsWUFBUSxDQUFDLE9BQU8sQ0FBQyxFQUFFLEVBQUUsQ0FBQyxDQUFDLElBQUksRUFBRSxHQUFHLEVBQUUsRUFBRSxDQUFDLGNBQWMsRUFBRSxDQUFDO1NBQ3JELElBQUksQ0FBQyxDQUFDLElBQUksRUFBRSxFQUFFO1FBQ1gsY0FBSSxDQUFDLE9BQU8sQ0FBQyxZQUFZLElBQUksQ0FBQyxJQUFJLGVBQWUsSUFBSSxDQUFDLEdBQUcsQ0FBQyxDQUFDLFFBQVEsSUFBSSxDQUFDLEdBQUcsQ0FBQyxDQUFDLFFBQVEsSUFBSSxDQUFDLEdBQUcsQ0FBQyxDQUFDLFNBQVMsbUJBQVcsQ0FBQyxJQUFJLENBQUMsU0FBUyxDQUFDLEtBQUssRUFBRSxFQUFFLENBQUMsQ0FBQztJQUNsSixDQUFDLENBQUM7U0FDRCxLQUFLLENBQUMsQ0FBQyxHQUFHLEVBQUUsRUFBRTtRQUNYLElBQUksR0FBRztZQUFFLGNBQUksQ0FBQyxLQUFLLENBQUMsR0FBRyxFQUFFLEVBQUUsQ0FBQyxDQUFDO0lBQ2pDLENBQUMsQ0FBQyxDQUFDO0FBQ1AsQ0FBQyxFQUFFO0lBQ0MsSUFBSSxFQUFFLHNCQUFTO0lBQ2YsR0FBRyxFQUFFLHlCQUFlO0NBQ3ZCLENBQUM7S0FDRCxRQUFRLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQyxFQUFFLEVBQUU7SUFDZixNQUFNLEVBQUUsR0FBRyxDQUFDLENBQUMsU0FBUyxFQUFFLENBQUM7SUFDekIsSUFBSSxDQUFDLEVBQUUsRUFBRTtRQUNMLGNBQUksQ0FBQyxLQUFLLENBQUMsOEJBQThCLENBQUMsQ0FBQztRQUMzQyxPQUFPO0tBQ1Y7SUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLFFBQVEsRUFBRTtRQUFFLE9BQU87SUFFM0IsSUFBSSxHQUFHLEdBQUcsbUJBQVEsQ0FBQyxNQUFNLENBQUMsQ0FBQyxDQUFDLEdBQUcsQ0FBQyxXQUFXLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQztJQUVoRCxZQUFRLENBQUMsT0FBTyxDQUFDLEVBQUUsRUFBRSxDQUFDLENBQUMsSUFBSSxFQUFFLEdBQUcsRUFBRSxDQUFDLENBQUMsU0FBUyxDQUFDO1NBQzdDLElBQUksQ0FBQyxDQUFDLElBQUksRUFBRSxFQUFFO1FBQ1gsY0FBSSxDQUFDLE9BQU8sQ0FBQyxZQUFZLElBQUksQ0FBQyxJQUFJLGVBQWUsSUFBSSxDQUFDLEdBQUcsQ0FBQyxDQUFDLFFBQVEsSUFBSSxDQUFDLEdBQUcsQ0FBQyxDQUFDLFFBQVEsSUFBSSxDQUFDLEdBQUcsQ0FBQyxDQUFDLFNBQVMsbUJBQVcsQ0FBQyxJQUFJLENBQUMsU0FBUyxDQUFDLEtBQUssRUFBRSxFQUFFLENBQUMsQ0FBQztJQUNsSixDQUFDLENBQUM7U0FDRCxLQUFLLENBQUMsQ0FBQyxHQUFHLEVBQUUsRUFBRTtRQUNYLElBQUksR0FBRztZQUFFLGNBQUksQ0FBQyxLQUFLLENBQUMsR0FBRyxFQUFFLEVBQUUsQ0FBQyxDQUFDO0lBQ2pDLENBQUMsQ0FBQyxDQUFDO0FBQ1AsQ0FBQyxFQUFFO0lBQ0MsSUFBSSxFQUFFLHNCQUFTO0lBQ2YsR0FBRyxFQUFFLHlCQUFlO0lBQ3BCLFNBQVMsRUFBRSxpQkFBTyxDQUFDLElBQUksQ0FBQyxhQUFhLEVBQUUsbUJBQVcsQ0FBQztDQUN0RCxDQUFDLENBQUM7QUFFSCxnQkFBZ0I7QUFDaEIsaUJBQU8sQ0FBQyxRQUFRLENBQUMsWUFBWSxFQUFFLDRCQUE0QixDQUFDO0tBQzNELFFBQVEsQ0FBQyxDQUFDLENBQUMsRUFBRSxDQUFDLEVBQUUsRUFBRTtJQUNmLE1BQU0sRUFBRSxHQUFHLENBQUMsQ0FBQyxTQUFTLEVBQUUsQ0FBQztJQUN6QixJQUFJLENBQUMsRUFBRSxFQUFFO1FBQ0wsY0FBSSxDQUFDLEtBQUssQ0FBQyw4QkFBOEIsQ0FBQyxDQUFDO1FBQzNDLE9BQU87S0FDVjtJQUNELElBQUksQ0FBQyxFQUFFLENBQUMsUUFBUSxFQUFFO1FBQUUsT0FBTztJQUUzQixlQUFRLENBQUMsTUFBTSxDQUFDLEVBQUUsQ0FBQyxDQUFDO0FBQ3hCLENBQUMsRUFBRSxFQUFFLENBQUM7S0FDTCxRQUFRLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQyxFQUFFLEVBQUU7SUFDZixNQUFNLEVBQUUsR0FBRyxDQUFDLENBQUMsU0FBUyxFQUFFLENBQUM7SUFDekIsSUFBSSxDQUFDLEVBQUUsRUFBRTtRQUNMLGNBQUksQ0FBQyxLQUFLLENBQUMsOEJBQThCLENBQUMsQ0FBQztRQUMzQyxPQUFPO0tBQ1Y7SUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLFFBQVEsRUFBRTtRQUFFLE9BQU87SUFFM0IsWUFBUSxDQUFDLFVBQVUsQ0FBQyxFQUFFLEVBQUUsQ0FBQyxDQUFDLElBQUksQ0FBQztTQUM5QixJQUFJLENBQUMsQ0FBQyxJQUFJLEVBQUcsRUFBRTtRQUNaLGNBQUksQ0FBQyxPQUFPLENBQUMsZUFBZSxJQUFJLENBQUMsSUFBSSxlQUFlLElBQUksQ0FBQyxHQUFHLENBQUMsQ0FBQyxRQUFRLElBQUksQ0FBQyxHQUFHLENBQUMsQ0FBQyxRQUFRLElBQUksQ0FBQyxHQUFHLENBQUMsQ0FBQyxTQUFTLG1CQUFXLENBQUMsSUFBSSxDQUFDLFNBQVMsQ0FBQyxLQUFLLEVBQUUsRUFBRSxDQUFDLENBQUM7SUFDckosQ0FBQyxDQUFDO1NBQ0QsS0FBSyxDQUFDLENBQUMsR0FBRyxFQUFFLEVBQUU7UUFDWCxJQUFJLEdBQUc7WUFBRSxjQUFJLENBQUMsS0FBSyxDQUFDLEdBQUcsRUFBRSxFQUFFLENBQUMsQ0FBQztJQUNqQyxDQUFDLENBQUMsQ0FBQztBQUNQLENBQUMsRUFBRTtJQUNDLElBQUksRUFBRSxzQkFBUztDQUNsQixDQUFDLENBQUM7QUFFSCxVQUFVO0FBQ1YsaUJBQU8sQ0FBQyxRQUFRLENBQUMsTUFBTSxFQUFFLGlDQUFpQyxDQUFDO0tBQzFELFFBQVEsQ0FBQyxDQUFDLENBQUMsRUFBRSxDQUFDLEVBQUUsRUFBRTtJQUNmLE1BQU0sRUFBRSxHQUFHLENBQUMsQ0FBQyxTQUFTLEVBQUUsQ0FBQztJQUN6QixJQUFJLENBQUMsRUFBRSxFQUFFO1FBQ0wsY0FBSSxDQUFDLEtBQUssQ0FBQyw4QkFBOEIsQ0FBQyxDQUFDO1FBQzNDLE9BQU87S0FDVjtJQUNELElBQUksQ0FBQyxFQUFFLENBQUMsUUFBUSxFQUFFO1FBQUUsT0FBTztJQUUzQixlQUFRLENBQUMsUUFBUSxDQUFDLEVBQUUsQ0FBQyxDQUFDO0FBQzFCLENBQUMsRUFBRSxFQUFFLENBQUM7S0FDTCxRQUFRLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQyxFQUFFLEVBQUU7SUFDZixNQUFNLEVBQUUsR0FBRyxDQUFDLENBQUMsU0FBUyxFQUFFLENBQUM7SUFDekIsSUFBSSxDQUFDLEVBQUUsRUFBRTtRQUNMLGNBQUksQ0FBQyxLQUFLLENBQUMsOEJBQThCLENBQUMsQ0FBQztRQUMzQyxPQUFPO0tBQ1Y7SUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLFFBQVEsRUFBRTtRQUFFLE9BQU87SUFFM0IsWUFBUSxDQUFDLFFBQVEsQ0FBQyxFQUFFLEVBQUUsQ0FBQyxDQUFDLElBQUksQ0FBQyxDQUFDO0FBQ2xDLENBQUMsRUFBRTtJQUNDLElBQUksRUFBRSxzQkFBUztDQUNsQixDQUFDLENBQUM7QUFFSCxjQUFjO0FBQ2QsaUJBQU8sQ0FBQyxRQUFRLENBQUMsVUFBVSxFQUFFLG1CQUFtQixDQUFDO0tBQ2hELFFBQVEsQ0FBQyxDQUFDLENBQUMsRUFBRSxDQUFDLEVBQUUsRUFBRTs7SUFDZixNQUFNLEVBQUUsR0FBRyxDQUFDLENBQUMsU0FBUyxFQUFFLENBQUM7SUFDekIsSUFBSSxDQUFDLEVBQUUsRUFBRTtRQUNMLGNBQUksQ0FBQyxLQUFLLENBQUMsOEJBQThCLENBQUMsQ0FBQztRQUMzQyxPQUFPO0tBQ1Y7SUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLFFBQVEsRUFBRTtRQUFFLE9BQU87SUFFM0IsRUFBRSxDQUFDLFdBQVcsQ0FBQyxjQUFjLENBQUMsTUFBQSxZQUFRLENBQUMsWUFBWSxDQUFDLEVBQUUsQ0FBQyxtQ0FBSSxFQUFFLENBQUMsQ0FBQyxRQUFRLEVBQUUsQ0FBQyxPQUFPLENBQUMsSUFBSSxFQUFFLFVBQVUsQ0FBQyxFQUFFLENBQUMsQ0FBQztBQUMzRyxDQUFDLEVBQUUsRUFBRSxDQUFDLENBQUM7QUFFUCxtQkFBbUI7QUFDbkIsaUJBQU8sQ0FBQyxRQUFRLENBQUMsZUFBZSxFQUFFLDRCQUE0QixFQUFFLGdDQUFzQixDQUFDLFFBQVEsQ0FBQztLQUMvRixRQUFRLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQyxFQUFFLEVBQUU7O0lBQ2YsTUFBTSxFQUFFLEdBQUcsTUFBQSxNQUFBLENBQUMsQ0FBQyxTQUFTLEVBQUUsMENBQUUsb0JBQW9CLEdBQUcsUUFBUSxFQUFFLG1DQUFJLFNBQVMsQ0FBQztJQUV6RSxZQUFRLENBQUMsZUFBZSxDQUFDLENBQUMsQ0FBQyxPQUFPLENBQUM7U0FDbEMsSUFBSSxDQUFDLEdBQUcsRUFBRTtRQUNQLGNBQUksQ0FBQyxPQUFPLENBQUMsU0FBUyxDQUFDLENBQUMsT0FBTywyQkFBMkIsRUFBRSxFQUFFLENBQUMsQ0FBQztJQUNwRSxDQUFDLENBQUM7U0FDRCxLQUFLLENBQUMsQ0FBQyxHQUFHLEVBQUUsRUFBRTtRQUNYLElBQUksR0FBRztZQUFFLGNBQUksQ0FBQyxLQUFLLENBQUMsR0FBRyxFQUFFLEVBQUUsQ0FBQyxDQUFDO0lBQ2pDLENBQUMsQ0FBQyxDQUFDO0FBQ1AsQ0FBQyxFQUFFO0lBQ0MsTUFBTSxFQUFFLGlCQUFPLENBQUMsSUFBSSxDQUFDLFlBQVksRUFBRSxRQUFRLENBQUM7SUFDNUMsT0FBTyxFQUFFLG9CQUFPO0NBQ25CLENBQUM7S0FDRCxRQUFRLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQyxFQUFFLEVBQUU7O0lBQ2YsTUFBTSxFQUFFLEdBQUcsTUFBQSxNQUFBLENBQUMsQ0FBQyxTQUFTLEVBQUUsMENBQUUsb0JBQW9CLEdBQUcsUUFBUSxFQUFFLG1DQUFJLFNBQVMsQ0FBQztJQUV6RSxLQUFLLE1BQU0sTUFBTSxJQUFJLENBQUMsQ0FBQyxNQUFNLENBQUMsVUFBVSxDQUFDLENBQUMsQ0FBQyxFQUFFO1FBQ3pDLFlBQVEsQ0FBQyxhQUFhLENBQUMsTUFBTSxFQUFFLENBQUMsQ0FBQyxPQUFPLENBQUM7YUFDeEMsSUFBSSxDQUFDLEdBQUcsRUFBRTtZQUNQLGNBQUksQ0FBQyxPQUFPLENBQUMsU0FBUyxDQUFDLENBQUMsT0FBTyxXQUFXLE1BQU0sQ0FBQyxPQUFPLEVBQUUsZ0JBQWdCLEVBQUUsRUFBRSxDQUFDLENBQUM7UUFDcEYsQ0FBQyxDQUFDO2FBQ0QsS0FBSyxDQUFDLENBQUMsR0FBRyxFQUFFLEVBQUU7WUFDWCxJQUFJLEdBQUc7Z0JBQUUsY0FBSSxDQUFDLEtBQUssQ0FBQyxHQUFHLEVBQUUsRUFBRSxDQUFDLENBQUM7UUFDakMsQ0FBQyxDQUFDLENBQUM7S0FDTjtBQUNMLENBQUMsRUFBRTtJQUNDLE1BQU0sRUFBRSxpQkFBTyxDQUFDLElBQUksQ0FBQyxZQUFZLEVBQUUsUUFBUSxDQUFDO0lBQzVDLE1BQU0sRUFBRSwrQkFBcUI7SUFDN0IsT0FBTyxFQUFFLG9CQUFPO0NBQ25CLENBQUMsQ0FBQyJ9
