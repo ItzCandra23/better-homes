@@ -214,6 +214,10 @@ export namespace HomeMain {
                 reject("Maximum homes limit");
                 return;
             }
+            if ((amount+1) > limit) {
+                reject("Maximum homes limit");
+                return;
+            }
             if (!textPattern.test(name)) {
                 reject("Invalid name!");
                 return;
@@ -282,6 +286,10 @@ export namespace HomeMain {
             const limit = getHomesLimit(player) ?? 0;
             const textPattern = /^[A-Za-z0-9]+$/;
             if (!limit && (amount+1) > limit) {
+                reject("Maximum homes limit");
+                return;
+            }
+            if ((amount+1) > limit) {
                 reject("Maximum homes limit");
                 return;
             }
